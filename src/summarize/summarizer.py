@@ -1,13 +1,12 @@
 import logging
 
-import google.generativeai as genai
+from google import genai
 
 from summarize.config import GEMINI_API_KEY, GEMINI_MODEL
 
 log = logging.getLogger(__name__)
 
-genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel(GEMINI_MODEL)
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 PROMPT = """
 Você é um especialista em síntese e análise de textos.
@@ -41,9 +40,12 @@ Texto:
 
 def summarize(text: str) -> str:
     if not text.strip():
-        raise ValueError("Texto vazio, nada para resumir.")
+        raise ValueError("Texto vazio — nada para resumir.")
 
     log.info("Enviando %d caracteres para o Gemini...", len(text))
 
-    response = model.generate_content(PROMPT.format(text=text))
+    response = client.models.generate_content(
+        model=GEMINI_MODEL,
+        contents=PROMPT.format(text=text),
+    )
     return response.text
